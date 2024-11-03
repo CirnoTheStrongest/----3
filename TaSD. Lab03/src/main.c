@@ -1,16 +1,24 @@
 #include <stdlib.h>
 #include <errno.h>
+#include "file.h"
+#include "matrix.h"
 #include "matrix_csr.h"
 
 int main(void)
 {
-    matrix_csr_t matrix;
-    FILE *f = fopen("matrix.txt", "r");
+    int rc;
+    matrix_t matrix;
 
-    read_matrix_csr(f, &matrix);
-    print_matrix_csr(&matrix);
-    print_matrix_csr_vectors(&matrix);
+    file_t input_file;
+    init_file_for_read(&input_file, "matrix.txt");
 
-    fclose(f);
+    if ((rc = read_matrix(input_file, &matrix)))
+        return rc;
+
+    file_t output_file;
+    init_file_for_write(&output_file, "output.txt");
+
+    print_matrix(output_file, &matrix);
+
     return EXIT_SUCCESS;
 }
