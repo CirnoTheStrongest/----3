@@ -15,9 +15,9 @@ typedef struct
 } matrix_t;
 
 int read_matrix(file_t filename, matrix_t *matrix);
-void print_matrix(file_t output, matrix_t *matrix);
+
+void print_matrix_in_file(matrix_t *matrix, file_t output);
+
 void multiply_by_matrix(matrix_t *matrix1, matrix_t *matrix2, matrix_t *result);
-
-
 
 #endif

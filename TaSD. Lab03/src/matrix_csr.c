@@ -1,46 +1,41 @@
 #include "matrix_csr.h"
 
 // прочитать матрицу из файла в обычном виде как матрицу в csr виде
-int read_matrix_csr(FILE *f, matrix_csr_t *matrix)
+int read_matrix_csr_as_matrix(file_t filename, matrix_csr_t *matrix_csr)
 {
-    int cur;
-    char str[MAX_STR_LEN];
-    int i = 0;
-    int j = 0;
+    int rc;
+    matrix_t matrix;
 
-    matrix->A.size = 0;
-    matrix->IA.size = 0;
-    matrix->JA.size = 0;
-    matrix->IA.values[0] = 0;
+    if ((rc = read_matrix(filename, &matrix)))
+        return rc;
+    if ((rc = convert_matrix_to_csr(&matrix, matrix_csr)))
+        return rc;
 
-    while (fgets(str, sizeof(str), f))
+    return EXIT_SUCCESS;
+}
+
+int convert_matrix_to_csr(matrix_t *matrix, matrix_csr_t *matrix_csr)
+{
+    matrix_csr->A.size = 0;
+    matrix_csr->IA.size = 0;
+    matrix_csr->JA.size = 0;
+    matrix_csr->IA.values[0] = 0;
+
+    for (size_t i = 0; i < matrix->count_of_lines; i++)
     {
-        j = 0;
-        matrix->IA.values[matrix->IA.size + 1] = matrix->IA.values[matrix->IA.size];
-        matrix->IA.size++;
+        matrix_csr->IA.values[matrix_csr->IA.size + 1] = matrix_csr->IA.values[matrix_csr->IA.size];
+        matrix_csr->IA.size++;
 
-        char *tmp = strtok(str, " \n");
-
-        while (tmp)
+        for (size_t j = 0; j < matrix->count_of_columns; j++)
         {
-            cur = atoi(tmp);
-
-            if (cur)
+            if (*(matrix->matrix + i * matrix->count_of_columns + j))
             {
-                matrix->A.values[matrix->A.size++] = cur;
-                matrix->IA.values[matrix->IA.size]++;
-                matrix->JA.values[matrix->JA.size++] = j;
+                matrix_csr->A.values[matrix_csr->A.size++] = *(matrix->matrix + i * matrix->count_of_columns + j);
+                matrix_csr->IA.values[matrix_csr->IA.size]++;
+                matrix_csr->JA.values[matrix_csr->JA.size++] = j;
             }
-
-            j++;
-            tmp = strtok(NULL, " \n");
         }
-        i++;
     }
-
-    if (!feof(f))
-        return EIO;
-
     return EXIT_SUCCESS;
 }
 
@@ -65,7 +60,7 @@ void print_matrix_csr(matrix_csr_t *matrix)
     {
         for (size_t j = 0; j <= max; j++)
         {
-            if (j == *cur_elem_in_JA && cur_elem < *cur_elem_in_IA)
+            if ((j == (size_t) *cur_elem_in_JA && cur_elem < (size_t) *cur_elem_in_IA))
             {
                 printf("%d ", *cur_elem_in_A);
                 cur_elem_in_A++;
@@ -82,6 +77,18 @@ void print_matrix_csr(matrix_csr_t *matrix)
     }
 }
 
+int read_matrix_csr(matrix_csr_t *matrix_csr, file_t filename)
+{
+    FILE *f = fopen(filename, "r");
+
+    read_array(matrix_csr->A.values, &(matrix_csr->A.size), f);
+    read_array(matrix_csr->JA.values, &(matrix_csr->JA.size), f);
+    read_array(matrix_csr->IA.values, &(matrix_csr->IA.size), f);
+
+    fclose(f);
+    return EXIT_SUCCESS;
+}
+
 // Функция для печати матрицы в виде её составляющих
 void print_matrix_csr_vectors(matrix_csr_t *matrix)
 {
@@ -94,7 +101,20 @@ void print_matrix_csr_vectors(matrix_csr_t *matrix)
     print_array(matrix->JA.values, matrix->JA.size);
 
     printf("Массив IA: ");
-    print_array(matrix->IA.values, matrix->IA.size);
+    print_array(matrix->IA.values, matrix->IA.size + 1);
+}
+
+void print_matrix_csr_vectors_in_file(matrix_csr_t *matrix, file_t filename)
+{
+    FILE *f = fopen(filename, "w");
+
+    print_array_in_file(matrix->A.values, matrix->A.size, f);
+
+    print_array_in_file(matrix->JA.values, matrix->JA.size, f);
+
+    print_array_in_file(matrix->IA.values, matrix->IA.size + 1, f);
+
+    fclose(f);
 }
 
 // не проверено
@@ -133,9 +153,9 @@ int set_value_csr(matrix_csr_t *matrix, int value, size_t line, size_t col)
         int *next_line = &(matrix->JA.values[matrix->IA.values[line + 1]]);
         while (position < next_line)
         {
-            if (*position == col)
+            if ((size_t) *position == col)
             {
-                delete_from_array(matrix->JA.values, matrix->JA.size, position - &(matrix->JA.values[0]));
+                delete_from_array(matrix->JA.values, &(matrix->JA.size), position - &(matrix->JA.values[0]));
                 break;
             }
             position++;
@@ -157,10 +177,4 @@ int get_sparceness_percent_csr(matrix_csr_t *matrix, size_t *percent)
 
     *percent = amount_of_non_zero_elements * 100 / (amount_of_columns * amount_of_lines); 
     return EXIT_SUCCESS;
-}
-
-// Функция умножения матрицы csr на матрицу csc
-void multiply_by_csc_matrix(matrix_csr_t *matrix_csr, matrix_csc_t *matrix_csc)
-{
-    
 }

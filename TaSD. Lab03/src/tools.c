@@ -1,7 +1,6 @@
-#include <stdio.h>
 #include "tools.h"
 
-size_t find_max(int *array, size_t len)
+int find_max(int *array, size_t len)
 {
     int max = array[0];
     
@@ -12,11 +11,35 @@ size_t find_max(int *array, size_t len)
     return max;
 }
 
+int read_array(int *array, size_t *size, FILE *filename)
+{
+    *size = 0;
+    char next_char = ' ';
+
+    while (next_char != '\n' && !feof(filename))
+    {
+        if (fscanf(filename, "%d", &(array[*size])) != 1)
+            return EXIT_FAILURE;
+            
+        (*size)++;
+        next_char = fgetc(filename);
+    }
+
+    return EXIT_SUCCESS;
+}
+
 void print_array(int *array, size_t size)
 {
     for (size_t i = 0; i < size; i++)
         printf("%2d ", array[i]);
     puts("");
+}
+
+void print_array_in_file(int *array, size_t size, FILE *filename)
+{
+    for (size_t i = 0; i < size - 1; i++)
+        fprintf(filename, "%d ", array[i]);
+    fprintf(filename, "%d", array[size - 1]);
 }
 
 int insert_in_array(int *array, size_t *len, int value, size_t position)

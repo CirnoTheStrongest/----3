@@ -1,8 +1,9 @@
 #include "file.h"
 
-int init_file_for_read(file_t *file, const char *str)
+int init_file_for_read(file_t *file)
 {
-    if (str == NULL)
+    char str[200];
+    if (!fgets(str, sizeof(str), stdin))
         return EBADF;
         
     FILE *f;
@@ -19,9 +20,10 @@ int init_file_for_read(file_t *file, const char *str)
     return EBADF;
 }
 
-int init_file_for_write(file_t *file, const char *str)
+int init_file_for_write(file_t *file)
 {
-    if (str == NULL)
+    char str[200];
+    if (!fgets(str, sizeof(str), stdin))
         return EBADF;
         
     FILE *f;
