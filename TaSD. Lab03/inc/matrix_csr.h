@@ -36,4 +36,14 @@ int convert_matrix_to_csr(matrix_t *matrix, matrix_csr_t *matrix_csr);
 
 int read_matrix_csr_as_matrix(file_t filename, matrix_csr_t *matrix_csr);
 
+int init_matrix_csr(matrix_csr_t *matrix_csr, size_t initial_A_size, size_t initial_IA_size);
+
+int is_matrix_csr_full(matrix_csr_t *matrix_csr);
+
+int realloc_matrix_csr(matrix_csr_t *matrix_csr);
+
+void free_matrix_csr(matrix_csr_t *matrix_csr);
+
+size_t get_size_of_matrix_csr(matrix_csr_t *matrix_csr);
+
 #endif

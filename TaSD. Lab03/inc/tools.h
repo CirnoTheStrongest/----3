@@ -4,7 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "file.h"
+
+int str_to_int(char *str, int *num);
 
 int find_max(int *array, size_t len);
 

@@ -2,6 +2,35 @@
 
 // матрица хранится как одномерный массив
 
+int init_matrix(matrix_t *matrix, size_t count_of_lines, size_t count_of_cols)
+{
+    matrix->matrix = malloc(sizeof(int) * (count_of_lines * count_of_cols + 2));
+    matrix->count_of_lines = count_of_lines;
+    matrix->count_of_columns = count_of_cols;
+
+    return EXIT_SUCCESS;
+}
+
+void free_matrix(matrix_t *matrix)
+{
+    free(matrix->matrix);
+    matrix->count_of_lines = 0;
+    matrix->count_of_columns = 0;
+}
+
+void print_matrix(matrix_t *matrix)
+{
+    printf("%lu %lu\n", matrix->count_of_lines, matrix->count_of_columns);
+    for (size_t i = 0; i < matrix->count_of_lines; i++)
+    {
+        for (size_t j = 0; j < matrix->count_of_columns; j++)
+        {
+            printf("%d ", *(matrix->matrix + i * matrix->count_of_columns + j));
+        }
+        printf("\n");
+    }
+}
+
 void print_matrix_in_file(matrix_t *matrix, file_t output)
 {
     FILE *f = fopen(output, "w");
@@ -30,16 +59,7 @@ int read_matrix(file_t filename, matrix_t *matrix)
         return EIO;
     }
 
-    matrix->matrix = malloc(sizeof(int) * (n * m + 2));
-
-    if (!(matrix->matrix))
-    {
-        fclose(f);
-        return ENOMEM;
-    }
-
-    matrix->count_of_lines = n;
-    matrix->count_of_columns = m;
+    init_matrix(matrix, n, m);
     
     for (size_t i = 0; i < n; i++)
     {
@@ -48,7 +68,7 @@ int read_matrix(file_t filename, matrix_t *matrix)
             if (!fscanf(f, "%d", matrix->matrix + m * i + j))
             {
                 fclose(f);
-                free(matrix->matrix);
+                free_matrix(matrix);
                 return EIO;
             }
         }
@@ -56,4 +76,9 @@ int read_matrix(file_t filename, matrix_t *matrix)
 
     fclose(f);
     return EXIT_SUCCESS;
+}
+
+size_t get_size_of_matrix(matrix_t *matrix)
+{
+    return sizeof(*matrix) + sizeof(int) * (matrix->count_of_columns * matrix->count_of_lines);
 }

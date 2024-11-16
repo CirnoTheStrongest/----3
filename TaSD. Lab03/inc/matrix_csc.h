@@ -34,4 +34,14 @@ int convert_matrix_to_csc(matrix_t *matrix, matrix_csc_t *matrix_csc);
 
 int read_matrix_csc_as_matrix(file_t filename, matrix_csc_t *matrix_csc);
 
+int init_matrix_csc(matrix_csc_t *matrix_csc, size_t initial_A_size, size_t initial_JA_size);
+
+int is_matrix_csc_full(matrix_csc_t *matrix_csc);
+
+int realloc_matrix_csc(matrix_csc_t *matrix_csc);
+
+void free_matrix_csc(matrix_csc_t *matrix_csc);
+
+size_t get_size_of_matrix_csc(matrix_csc_t *matrix_csc);
+
 #endif

@@ -1,17 +1,22 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(void)
 {
-    int num;
-    char ch = ' ';
-    FILE *f = fopen("output.txt", "r");
+    int zeros = 0;
+    int iters = 1000;
+    double result;
+    int cur;
 
-    while (ch != '\n')
+    for (int i = 0; i < iters; i++)
     {
-        fscanf(f, "%d", &num);
-        ch = fgetc(f);
-        printf("%d_%c\n", num, ch);
+        cur = rand() % 100;
+        if (cur == 0)
+            zeros++;
     }
 
-    fclose(f);
+    result = (double) zeros / iters;
+    printf("%lf\n", result);
+
+    return 0;
 }

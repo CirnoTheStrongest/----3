@@ -1,5 +1,58 @@
 #include "matrix_csr.h"
 
+int init_matrix_csr(matrix_csr_t *matrix_csr, size_t initial_A_size, size_t initial_IA_size)
+{
+    int rc;
+
+    rc = init_vector(&(matrix_csr->A), initial_A_size);
+    if (rc)
+        return rc;
+    rc = init_vector(&(matrix_csr->JA), initial_A_size);
+    if (rc)
+        return rc;
+    rc = init_vector(&(matrix_csr->IA), initial_IA_size);
+    if (rc)
+        return rc;
+
+    return EXIT_SUCCESS;
+}
+
+int is_matrix_csr_full(matrix_csr_t *matrix_csr)
+{
+    if (is_full(&(matrix_csr->A)))
+        return 1;
+    if (is_full(&(matrix_csr->JA)))
+        return 1;
+    if (is_full(&(matrix_csr->IA)))
+        return 1;
+    
+    return 0;
+}
+
+int realloc_matrix_csr(matrix_csr_t *matrix_csr)
+{
+    int rc;
+
+    if (is_full(&(matrix_csr->A)))
+    {
+        rc = realloc_vector(&(matrix_csr->A), matrix_csr->A.max_capacity * 2);
+        if (rc)
+            return rc;
+        rc = realloc_vector(&(matrix_csr->JA), matrix_csr->JA.max_capacity * 2);
+        if (rc)
+            return rc;
+    }
+
+    if (is_full(&(matrix_csr->IA)))
+    {
+        rc = realloc_vector(&(matrix_csr->IA), matrix_csr->IA.max_capacity * 2);
+        if (rc)
+            return rc;
+    }
+
+    return EXIT_SUCCESS;
+}
+
 // прочитать матрицу из файла в обычном виде как матрицу в csr виде
 int read_matrix_csr_as_matrix(file_t filename, matrix_csr_t *matrix_csr)
 {
@@ -16,15 +69,24 @@ int read_matrix_csr_as_matrix(file_t filename, matrix_csr_t *matrix_csr)
 
 int convert_matrix_to_csr(matrix_t *matrix, matrix_csr_t *matrix_csr)
 {
-    matrix_csr->A.size = 0;
-    matrix_csr->IA.size = 0;
-    matrix_csr->JA.size = 0;
+    int rc;
+    rc = init_matrix_csr(matrix_csr, INITIAL_SIZE, matrix->count_of_lines);
+    if (rc)
+        return rc;
     matrix_csr->IA.values[0] = 0;
 
     for (size_t i = 0; i < matrix->count_of_lines; i++)
     {
-        matrix_csr->IA.values[matrix_csr->IA.size + 1] = matrix_csr->IA.values[matrix_csr->IA.size];
         matrix_csr->IA.size++;
+
+        if (is_matrix_csr_full(matrix_csr))
+        {
+            rc = realloc_matrix_csr(matrix_csr);
+            if (rc)
+                return rc;
+        }
+
+        matrix_csr->IA.values[matrix_csr->IA.size] = matrix_csr->IA.values[matrix_csr->IA.size - 1];
 
         for (size_t j = 0; j < matrix->count_of_columns; j++)
         {
@@ -33,6 +95,13 @@ int convert_matrix_to_csr(matrix_t *matrix, matrix_csr_t *matrix_csr)
                 matrix_csr->A.values[matrix_csr->A.size++] = *(matrix->matrix + i * matrix->count_of_columns + j);
                 matrix_csr->IA.values[matrix_csr->IA.size]++;
                 matrix_csr->JA.values[matrix_csr->JA.size++] = j;
+
+                if (is_matrix_csr_full(matrix_csr))
+                {
+                    rc = realloc_matrix_csr(matrix_csr);
+                    if (rc)
+                        return rc;
+                }
             }
         }
     }
@@ -81,9 +150,9 @@ int read_matrix_csr(matrix_csr_t *matrix_csr, file_t filename)
 {
     FILE *f = fopen(filename, "r");
 
-    read_array(matrix_csr->A.values, &(matrix_csr->A.size), f);
-    read_array(matrix_csr->JA.values, &(matrix_csr->JA.size), f);
-    read_array(matrix_csr->IA.values, &(matrix_csr->IA.size), f);
+    read_vector_from_file(&(matrix_csr->A), f);
+    read_vector_from_file(&(matrix_csr->JA), f);
+    read_vector_from_file(&(matrix_csr->IA), f);
 
     fclose(f);
     return EXIT_SUCCESS;
@@ -141,6 +210,9 @@ int set_value_csr(matrix_csr_t *matrix, int value, size_t line, size_t col)
 
         // вставляем в массив значений новое значение
         insert_in_array(matrix->A.values, &(matrix->A.size), value, position - &(matrix->JA.values[0]));
+
+        if (is_matrix_csr_full(matrix))
+            realloc_matrix_csr(matrix);
     }
     else // если value равно нулю
     {
@@ -177,4 +249,20 @@ int get_sparceness_percent_csr(matrix_csr_t *matrix, size_t *percent)
 
     *percent = amount_of_non_zero_elements * 100 / (amount_of_columns * amount_of_lines); 
     return EXIT_SUCCESS;
+}
+
+void free_matrix_csr(matrix_csr_t *matrix_csr)
+{
+    free(matrix_csr->A.values);
+    free(matrix_csr->JA.values);
+    free(matrix_csr->IA.values);
+
+    matrix_csr->A.max_capacity = 0;
+    matrix_csr->JA.max_capacity = 0;
+    matrix_csr->IA.max_capacity = 0;
+}
+
+size_t get_size_of_matrix_csr(matrix_csr_t *matrix_csr)
+{
+    return sizeof(*matrix_csr) + sizeof(int) * (matrix_csr->A.max_capacity + matrix_csr->IA.max_capacity + matrix_csr->JA.max_capacity);
 }

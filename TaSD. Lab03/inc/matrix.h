@@ -16,8 +16,14 @@ typedef struct
 
 int read_matrix(file_t filename, matrix_t *matrix);
 
+void print_matrix(matrix_t *matrix);
+
 void print_matrix_in_file(matrix_t *matrix, file_t output);
 
-void multiply_by_matrix(matrix_t *matrix1, matrix_t *matrix2, matrix_t *result);
+size_t get_size_of_matrix(matrix_t *matrix);
+
+int init_matrix(matrix_t *matrix, size_t count_of_lines, size_t count_of_cols);
+
+void free_matrix(matrix_t *matrix);
 
 #endif
