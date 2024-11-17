@@ -82,3 +82,43 @@ size_t get_size_of_matrix(matrix_t *matrix)
 {
     return sizeof(*matrix) + sizeof(int) * (matrix->count_of_columns * matrix->count_of_lines);
 }
+
+int set_value(matrix_t *matrix, size_t line, size_t col, int value)
+{
+    if (line > matrix->count_of_lines - 1 || col > matrix->count_of_columns - 1)
+        return ERANGE;
+
+    matrix->matrix[line * matrix->count_of_columns + col] = value;
+    return EXIT_SUCCESS;
+}
+
+int input_and_set_value(matrix_t *matrix)
+{
+    int line, col;
+    int value;
+    char buf[100];
+    int rc;
+
+    puts("Введите через пробел строку, столбец и значение, которое необходимо присвоить указанной ячейке:");
+    if (!fgets(buf, sizeof(buf), stdin))
+    {
+        return EIO;
+    }
+    
+    char *pch = strtok(buf, " \n");
+    
+    rc = str_to_int(pch, &line);
+    pch = strtok(NULL, " \n");
+    rc = str_to_int(pch, &col);
+    pch = strtok(NULL, " \n");
+    rc = str_to_int(pch, &value);
+    pch = strtok(NULL, " \n");
+
+    if (pch != NULL)
+        return EIO;
+
+    rc = set_value(matrix, line, col, value);
+    if (rc)
+        return rc;
+    return EXIT_SUCCESS;
+}

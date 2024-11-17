@@ -9,6 +9,7 @@
 
 int main(void)
 {
+    int rc;
     int action;
     matrix_t matrix1;
     matrix_t matrix2;
@@ -19,7 +20,9 @@ int main(void)
     {
         show_menu();
         get_action(&action);
-        do_action(action, &matrix1, &matrix2, &matrix_csc, &matrix_csr);
+        rc = do_action(action, &matrix1, &matrix2, &matrix_csc, &matrix_csr);
+        if (rc) 
+            print_error_message(rc);
     }
 
     return EXIT_SUCCESS;

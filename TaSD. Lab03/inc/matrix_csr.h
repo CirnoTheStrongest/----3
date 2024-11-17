@@ -46,4 +46,6 @@ void free_matrix_csr(matrix_csr_t *matrix_csr);
 
 size_t get_size_of_matrix_csr(matrix_csr_t *matrix_csr);
 
+int input_and_set_value_csr(matrix_csr_t *matrix);
+
 #endif

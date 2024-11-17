@@ -44,4 +44,6 @@ void free_matrix_csc(matrix_csc_t *matrix_csc);
 
 size_t get_size_of_matrix_csc(matrix_csc_t *matrix_csc);
 
+int input_and_set_value_csc(matrix_csc_t *matrix);
+
 #endif

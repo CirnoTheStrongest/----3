@@ -14,7 +14,7 @@ int multiply_csc_by_csr_matrix(matrix_csc_t *matrix_csc, matrix_csr_t *matrix_cs
 
 int multiply_csr_by_csc_matrix(matrix_csr_t *matrix_csr, matrix_csc_t *matrix_csc, matrix_csc_t *result);
 
-void multiply_matrix_by_matrix(matrix_t *matrix1, matrix_t *matrix2, matrix_t *result);
+int multiply_matrix_by_matrix(matrix_t *matrix1, matrix_t *matrix2, matrix_t *result);
 
 void test_multiplication(void);
 

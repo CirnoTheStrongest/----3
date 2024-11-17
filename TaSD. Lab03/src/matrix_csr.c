@@ -240,6 +240,41 @@ int set_value_csr(matrix_csr_t *matrix, int value, size_t line, size_t col)
     return EXIT_SUCCESS;
 }
 
+int input_and_set_value_csr(matrix_csr_t *matrix)
+{
+    int line, col;
+    int value;
+    char buf[100];
+    int rc;
+
+    puts("Введите через пробел строку, столбец и значение, которое необходимо присвоить указанной ячейке:");
+    if (!fgets(buf, sizeof(buf), stdin))
+    {
+        puts("Некорректный ввод!");
+        return EIO;
+    }
+    
+    char *pch = strtok(buf, " \n");
+    
+    rc = str_to_int(pch, &line);
+    pch = strtok(NULL, " \n");
+    rc = str_to_int(pch, &col);
+    pch = strtok(NULL, " \n");
+    rc = str_to_int(pch, &value);
+    pch = strtok(NULL, " \n");
+
+    if (pch != NULL)
+    {
+        puts("Некорректный ввод!");
+        return EIO;
+    }
+
+    rc = set_value_csr(matrix, value, line, col);
+    if (rc)
+        return rc;
+    return EXIT_SUCCESS;
+}
+
 // Функция возвращает процент заполненности csr матрицы ненулевыми значениями
 int get_sparceness_percent_csr(matrix_csr_t *matrix, size_t *percent)
 {

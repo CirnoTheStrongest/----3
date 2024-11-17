@@ -194,15 +194,14 @@ static void multiply_matrix_line_by_matrix_col(matrix_t *matrix1, size_t line, m
         *result += matrix1->matrix[matrix1->count_of_columns * line + i] * matrix2->matrix[matrix2->count_of_columns * i + col];
 }
 
-void multiply_matrix_by_matrix(matrix_t *matrix1, matrix_t *matrix2, matrix_t *result)
+int multiply_matrix_by_matrix(matrix_t *matrix1, matrix_t *matrix2, matrix_t *result)
 {
+    // умножение несогласованных матриц
     if (matrix1->count_of_columns != matrix2->count_of_lines)
-    {
-        puts("Умножение несогласованных матриц невозможно.");
-        return;
-    }
+        return EINVAL;
 
-    init_matrix(result, matrix1->count_of_lines, matrix2->count_of_columns);
+    if (init_matrix(result, matrix1->count_of_lines, matrix2->count_of_columns))
+        return EIO;
 
     for (size_t line = 0; line < result->count_of_lines; line++)
     {
@@ -211,6 +210,8 @@ void multiply_matrix_by_matrix(matrix_t *matrix1, matrix_t *matrix2, matrix_t *r
             multiply_matrix_line_by_matrix_col(matrix1, line, matrix2, col, &(result->matrix[result->count_of_columns * line + col]));
         }
     }
+
+    return EXIT_SUCCESS;
 }
 
 static int generate_random_int(int not_null_chance)
@@ -223,27 +224,6 @@ static int generate_random_int(int not_null_chance)
         return 0;
 
 }
-
-// static void fill_file_random_square_matrix(const char *filename, size_t size, size_t fillness)
-// {
-//     FILE *f = fopen(filename, "w");
-
-//     srand((unsigned int) time(NULL));
-//     int cur_num;
-
-//     fprintf(f, "%ld %ld\n", size, size);
-//     for (size_t i = 0; i < size; i++)
-//     {
-//         for (size_t j = 0; j < size; j++)
-//         {
-//             cur_num = generate_random_int(fillness);
-//             fprintf(f, "%d ", cur_num);
-//         }
-//         fprintf(f, "\n");
-//     }
-
-//     fclose(f);
-// }
 
 static void generate_random_square_matrix(matrix_t *matrix, size_t size, size_t fillness)
 {

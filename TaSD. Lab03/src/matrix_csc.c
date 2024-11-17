@@ -186,7 +186,10 @@ int set_value_csc(matrix_csc_t *matrix, int value, size_t line, size_t col)
     // если value не равно нулю
     if (value)
     {
-        // изменяем значения количества ненулевых элементов в предшествующих текущей строке строках на +1
+        if (is_matrix_csc_full(matrix))
+            realloc_matrix_csc(matrix);
+
+        // изменяем значения количества ненулевых элементов в идущих далее текущей строки строках на +1
         for (size_t i = col + 1; i < matrix->JA.size; i++)
             matrix->JA.values[i]++;
 
@@ -195,6 +198,9 @@ int set_value_csc(matrix_csc_t *matrix, int value, size_t line, size_t col)
         int *next_line = &(matrix->IA.values[matrix->JA.values[col + 1]]);
         insert_in_array(matrix->IA.values, &(matrix->IA.size), line, matrix->JA.values[col]);
         
+        if (is_matrix_csc_full(matrix))
+            realloc_matrix_csc(matrix);
+
         // ставим значения столбцов в строке по порядку
         while (*position > *(position + 1) && position < next_line)
         {
@@ -204,13 +210,10 @@ int set_value_csc(matrix_csc_t *matrix, int value, size_t line, size_t col)
 
         // вставляем в массив значений новое значение
         insert_in_array(matrix->A.values, &(matrix->A.size), value, position - &(matrix->IA.values[0]));
-
-        if (is_matrix_csc_full(matrix))
-                    realloc_matrix_csc(matrix);
     }
     else // если value равно нулю
     {
-        // изменяем значения количества ненулевых элементов в предшествующих текущей строке строках на +1
+        // изменяем значения количества ненулевых элементов в идущих далее текущей строки строках на -1
         for (size_t i = col + 1; i < matrix->JA.size; i++)
             matrix->JA.values[i]--;
 
@@ -231,6 +234,41 @@ int set_value_csc(matrix_csc_t *matrix, int value, size_t line, size_t col)
         delete_from_array(matrix->A.values, &(matrix->A.size), position - &(matrix->IA.values[0]));
     }
     
+    return EXIT_SUCCESS;
+}
+
+int input_and_set_value_csc(matrix_csc_t *matrix)
+{
+    int line, col;
+    int value;
+    char buf[100];
+    int rc;
+
+    puts("Введите через пробел строку, столбец и значение, которое необходимо присвоить указанной ячейке:");
+    if (!fgets(buf, sizeof(buf), stdin))
+    {
+        puts("Некорректный ввод!");
+        return EIO;
+    }
+    
+    char *pch = strtok(buf, " \n");
+    
+    rc = str_to_int(pch, &line);
+    pch = strtok(NULL, " \n");
+    rc = str_to_int(pch, &col);
+    pch = strtok(NULL, " \n");
+    rc = str_to_int(pch, &value);
+    pch = strtok(NULL, " \n");
+
+    if (pch != NULL)
+    {
+        puts("Некорректный ввод!");
+        return EIO;
+    }
+
+    rc = set_value_csc(matrix, value, line, col);
+    if (rc)
+        return rc;
     return EXIT_SUCCESS;
 }
 

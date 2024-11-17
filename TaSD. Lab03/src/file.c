@@ -3,15 +3,13 @@
 int init_file_for_read(file_t *file)
 {
     char str[200];
-    puts("Введите имя файла:");
+    puts("Введите имя файла для ввода:");
     
     if (!fgets(str, sizeof(str), stdin))
         return EBADF;
 
     if (str[strlen(str) - 1] == '\n')
         str[strlen(str) - 1] = '\0';
-    
-    puts(str);
         
     FILE *f;
     if ((f = fopen(str, "r")))
@@ -30,8 +28,13 @@ int init_file_for_read(file_t *file)
 int init_file_for_write(file_t *file)
 {
     char str[200];
+    puts("Введите имя файла для вывода:");
+    
     if (!fgets(str, sizeof(str), stdin))
         return EBADF;
+
+    if (str[strlen(str) - 1] == '\n')
+        str[strlen(str) - 1] = '\0';
         
     FILE *f;
     if ((f = fopen(str, "w")))

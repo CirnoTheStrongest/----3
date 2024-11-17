@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <tools.h>
 #include "file.h"
 #define MAX_MATRIX_SIZE 1000
 
@@ -25,5 +26,9 @@ size_t get_size_of_matrix(matrix_t *matrix);
 int init_matrix(matrix_t *matrix, size_t count_of_lines, size_t count_of_cols);
 
 void free_matrix(matrix_t *matrix);
+
+int set_value(matrix_t *matrix, size_t line, size_t col, int value);
+
+int input_and_set_value(matrix_t *matrix);
 
 #endif
